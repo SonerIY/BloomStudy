@@ -462,10 +462,14 @@ body.dark-mode .auth-card {
 }
 
 @media (max-width: 768px) {
-    body { 
+    html, body { 
         height: auto; 
         overflow-y: auto; 
         overflow-x: hidden; 
+        width: 100%;
+    }
+    #app-section {
+        height: auto !important;
     }
     .app-header { padding: 10px 15px; }
     .mobile-only { display: block; font-size: 1.2rem; }
@@ -474,6 +478,10 @@ body.dark-mode .auth-card {
         flex-direction: column; 
         height: auto; 
         overflow: visible; 
+    }
+    
+    #hyperFocusBtn {
+        display: none !important;
     }
     
     /* Off-Canvas Hamburger Menu Sidebar */
