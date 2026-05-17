@@ -452,6 +452,9 @@ body.dark-mode .auth-card {
 .sponsor-banner { width: 100%; max-width: 400px; height: 60px; background: #ddd; margin: 5px auto 0; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); }
 
 /* Responsive Mobile First Tweaks */
+.mobile-only { display: none; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+
 @media (max-width: 900px) {
     .pomodoro-layout { grid-template-columns: 1fr; }
     .task-grid { grid-template-columns: 1fr; }
@@ -459,26 +462,48 @@ body.dark-mode .auth-card {
 }
 
 @media (max-width: 768px) {
-    .app-header { padding: 15px 20px; }
+    body { overflow-x: hidden; }
+    .app-header { padding: 10px 15px; }
+    .mobile-only { display: block; font-size: 1.2rem; }
+    
     .app-layout { flex-direction: column; height: calc(100vh - 60px); }
     
-    /* Bottom Navigation! */
+    /* Off-Canvas Hamburger Menu Sidebar */
     .sidebar-nav {
-        order: 2; /* Put at bottom */
-        width: 100%; height: 70px; flex-direction: row; padding: 0 10px;
-        background: white; border-top: 1px solid var(--border-color);
-        overflow-x: auto; overflow-y: hidden; align-items: center; gap: 5px;
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 260px;
+        height: 100vh;
+        z-index: 9999;
+        background: var(--bg-page); /* Solid color better for mobile */
+        transition: left 0.3s ease;
+        padding-top: 20px;
+        flex-direction: column;
+        border-right: 1px solid var(--border-color);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
     }
-    .nav-btn { flex-direction: column; justify-content: center; gap: 4px; padding: 5px; min-width: 70px; font-size: 0.7rem; text-align: center; }
-    .nav-btn i { font-size: 1.2rem; }
-    .nav-btn span { display: block; }
     
-    .global-audio-widget { display: none !important; /* Hide mini widget on mobile nav to save space */ }
+    .sidebar-nav.menu-open {
+        left: 0;
+    }
+    
+    body.dark-mode .sidebar-nav {
+        background: var(--bg-main);
+    }
 
-    .main-container { padding: 20px; padding-bottom: 80px; } /* Room for bottom nav */
-    .timer-circle { width: 200px; height: 200px; }
-    .timer-display { font-size: 3rem; }
+    .nav-btn { justify-content: flex-start; padding: 15px 20px; }
+    .nav-btn i { font-size: 1.2rem; margin-right: 10px; }
+    .nav-btn span { display: inline; }
+    
+    .global-audio-widget { margin: 20px 10px; }
+
+    .main-container { padding: 15px; padding-bottom: 20px; width: 100vw; overflow-x: hidden; } 
+    .timer-circle { width: 220px; height: 220px; }
+    .timer-display { font-size: 3.5rem; }
+    .cookie-banner { position: relative; bottom: 0; left: 0; width: 90%; margin: auto 5%; margin-bottom: 20px; }
 }
+
 
 @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }

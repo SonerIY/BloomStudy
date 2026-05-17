@@ -97,10 +97,33 @@ function switchTab(tabId) {
     let targetBtn = document.querySelector(`[data-tab="${tabId}"]`);
     if(targetBtn) targetBtn.classList.add('active');
     document.getElementById(tabId).classList.add('active');
+    
+    const sidebarNav = document.querySelector('.sidebar-nav');
+    if(window.innerWidth <= 768 && sidebarNav) {
+        sidebarNav.classList.remove('menu-open');
+    }
 }
 
 navBtns.forEach(btn => {
     btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+});
+
+// Mobile Menu Toggle
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', () => {
+        document.querySelector('.sidebar-nav').classList.toggle('menu-open');
+    });
+}
+
+// Close menu when clicking outside on mobile
+document.addEventListener('click', (e) => {
+    const sidebarNav = document.querySelector('.sidebar-nav');
+    if(window.innerWidth <= 768 && sidebarNav && sidebarNav.classList.contains('menu-open')) {
+        if(!sidebarNav.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+            sidebarNav.classList.remove('menu-open');
+        }
+    }
 });
 
 // --- ZEN & DARK MODE & SHORTCUTS ---
