@@ -498,10 +498,20 @@ body.dark-mode .auth-card {
     
     .global-audio-widget { margin: 20px 10px; }
 
-    .main-container { padding: 15px; padding-bottom: 20px; width: 100vw; overflow-x: hidden; } 
+    .main-container { padding: 15px; padding-bottom: 20px; width: 100%; overflow-x: hidden; box-sizing: border-box; } 
     .timer-circle { width: 220px; height: 220px; }
     .timer-display { font-size: 3.5rem; }
-    .cookie-banner { position: relative; bottom: 0; left: 0; width: 90%; margin: auto 5%; margin-bottom: 20px; }
+    .cookie-banner { position: relative; bottom: 0; left: 0; width: 100%; margin-bottom: 20px; }
+    
+    /* Fix Hyper Focus Mode overflow on mobile */
+    body.hyper-focus-mode .timer-section {
+        transform: scale(1.1) !important;
+        margin-top: -5vh !important;
+        width: 100%;
+    }
+    body.hyper-focus-mode .todays-plan-panel {
+        display: none !important; /* completely hide on mobile to prevent overflow */
+    }
 }
 
 
