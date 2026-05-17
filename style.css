@@ -462,11 +462,19 @@ body.dark-mode .auth-card {
 }
 
 @media (max-width: 768px) {
-    body { overflow-x: hidden; }
+    body { 
+        height: auto; 
+        overflow-y: auto; 
+        overflow-x: hidden; 
+    }
     .app-header { padding: 10px 15px; }
     .mobile-only { display: block; font-size: 1.2rem; }
     
-    .app-layout { flex-direction: column; height: calc(100vh - 60px); }
+    .app-layout { 
+        flex-direction: column; 
+        height: auto; 
+        overflow: visible; 
+    }
     
     /* Off-Canvas Hamburger Menu Sidebar */
     .sidebar-nav {
@@ -498,15 +506,15 @@ body.dark-mode .auth-card {
     
     .global-audio-widget { margin: 20px 10px; }
 
-    .main-container { padding: 15px; padding-bottom: 20px; width: 100%; overflow-x: hidden; box-sizing: border-box; } 
+    .main-container { padding: 15px; padding-bottom: 40px; width: 100%; overflow: visible; box-sizing: border-box; } 
     .timer-circle { width: 220px; height: 220px; }
     .timer-display { font-size: 3.5rem; }
     .cookie-banner { position: relative; bottom: 0; left: 0; width: 100%; margin-bottom: 20px; }
     
     /* Fix Hyper Focus Mode overflow on mobile */
     body.hyper-focus-mode .timer-section {
-        transform: scale(1.1) !important;
-        margin-top: -5vh !important;
+        transform: none !important;
+        margin-top: 0 !important;
         width: 100%;
     }
     body.hyper-focus-mode .todays-plan-panel {
