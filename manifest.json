@@ -1,0 +1,22 @@
+{
+  "name": "Bloom - Study Softly",
+  "short_name": "Bloom",
+  "description": "Odaklanmak ve büyümek için sakin bir çalışma alanı.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAF9F8",
+  "theme_color": "#C497B7",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjQzQ5N0I3IiBkPSJNMjU2IDUxMmMtMTQxLjQgMC0yNTYtMTE0LjYtMjU2LTI1NlMyMjkuNCAwIDI1NiAwYzE0MS40IDAgMjU2IDExNC42IDI1NiAyNTZzLTExNC42IDI1Ni0yNTYgMjU2ek0yMzIgMTI4djEyOEgyMjhjLTkuMiAwLTE4IDUuMS0yMi4zIDEzLjNjLTQuMyA4LjItMy44IDE4LjIgMS4zIDI1LjhsNjQgOTZjNC43IDcgMTIuNSAxMS4yIDIwLjkgMTFzMTYuMS00LjUgMjAuNi0xMS43bDY0LTk2YzQuOS03LjQgNS4yLTE3LjEgMS4xLTI1LjItNC4yLTguMS0xMi44LTEzLjItMjItMTMuMmgtNFYxMjhjMC0xNy43LTE0LjMtMzItMzItMzJzLTMyIDE0LjMtMzIgMzJ6Ii8+PC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjQzQ5N0I3IiBkPSJNMjU2IDUxMmMtMTQxLjQgMC0yNTYtMTE0LjYtMjU2LTI1NlMyMjkuNCAwIDI1NiAwYzE0MS40IDAgMjU2IDExNC42IDI1NiAyNTZzLTExNC42IDI1Ni0yNTYgMjU2ek0yMzIgMTI4djEyOEgyMjhjLTkuMiAwLTE4IDUuMS0yMi4zIDEzLjNjLTQuMyA4LjItMy44IDE4LjIgMS4zIDI1LjhsNjQgOTZjNC43IDcgMTIuNSAxMS4yIDIwLjkgMTFzMTYuMS00LjUgMjAuNi0xMS43bDY0LTk2YzQuOS03LjQgNS4yLTE3LjEgMS4xLTI1LjItNC4yLTguMS0xMi44LTEzLjItMjItMTMuMmgtNFYxMjhjMC0xNy43LTE0LjMtMzItMzItMzJzLTMyIDE0LjMtMzIgMzJ6Ii8+PC9zdmc+",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

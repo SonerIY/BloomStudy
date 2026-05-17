@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom - Study softly</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C497B7">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase Compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="auth-card">
+            <button id="closeAuthBtn" class="close-btn" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            <div id="authMainSection">
+                <h2>Giriş Yap / Kaydol</h2>
+                <p style="margin-bottom:15px; font-size:0.85rem; color:var(--text-muted);">
+                    Verilerinizi bulut ile senkronize etmek için hesap oluşturun veya giriş yapın.
+                </p>
+                
+                <button id="authGoogleBtn" class="btn-light" style="width:100%; margin-bottom:10px;"><i class="fa-brands fa-google"></i> Google ile Devam Et</button>
+                
+                <form id="auth-form" style="margin-top:20px; border-top:1px solid var(--border-color); padding-top:20px;">
+                    <input type="email" id="authEmail" placeholder="E-posta adresi" required style="margin-bottom:10px; width:100%; padding:10px;">
+                    <input type="password" id="authPassword" placeholder="Şifre" required minlength="8" style="margin-bottom:5px; width:100%; padding:10px;">
+                    <div style="text-align: right; margin-bottom: 15px;">
+                        <a href="#" id="showForgotPasswordBtn" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: underline;">Şifremi Unuttum</a>
+                    </div>
+                    <button type="submit" id="authSubmitBtn" class="btn-dark" style="width:100%; margin-bottom:15px;">Giriş Yap</button>
+                    
+                    <div style="text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+                        <span id="authToggleText">Hesabınız yok mu?</span> 
+                        <a href="#" id="authToggleLink" style="color: var(--primary-color); font-weight: bold; text-decoration: none;">Kayıt Ol</a>
+                    </div>
+                </form>
+
+                <button id="authGuestBtn" class="btn-light" style="width:100%; margin-top:20px; border:none; background:transparent; font-size:0.85rem; text-decoration:underline;">
+                    Hesap Oluşturmadan Devam Et (Misafir)
+                </button>
+            </div>
+
+            <div id="forgotPasswordSection" style="display:none;">
+                <h2>Şifremi Unuttum</h2>
+                <p style="margin-bottom:15px; font-size:0.85rem; color:var(--text-muted);">
+                    Kayıtlı e-posta adresinizi girin. Size şifrenizi sıfırlamanız için güvenli bir bağlantı göndereceğiz.
+                </p>
+                <form id="forgotPasswordForm" style="margin-top:20px;">
+                    <input type="email" id="forgotEmail" placeholder="E-posta adresi" required style="margin-bottom:15px; width:100%; padding:10px;">
+                    <button type="submit" class="btn-dark" style="width:100%; margin-bottom:15px;">Sıfırlama Bağlantısı Gönder</button>
+                    <div style="text-align: center;">
+                        <a href="#" id="backToLoginBtn" style="color: var(--primary-color); font-weight: bold; text-decoration: none; font-size: 0.85rem;">Giriş ekranına dön</a>
+                    </div>
+                </form>
+            </div>
+
+            
+            <p id="auth-error" class="error-msg" style="margin-top:10px;"></p>
+        </div>
+    </div>
+
+    <!-- Post-Session Report Modal -->
+    <div id="report-modal" class="modal">
+        <div class="auth-card">
+            <button id="closeReportBtn" class="close-btn" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            <h2>Oturum Bitti! 🌸</h2>
+            <p style="margin-bottom:15px; color:var(--text-muted)">Nasıl geçti? Küçük bir not bırakarak ilerlemeni kaydet.</p>
+            <form id="reportForm">
+                <div class="input-group">
+                    <label for="reportEfficiency">Verimlilik Puanı (1-5)</label>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span>Kötü</span><span>Harika</span>
+                    </div>
+                    <input type="range" min="1" max="5" value="4" id="reportEfficiency" style="width:100%; -webkit-appearance:none; height:8px; background:#dcd7d7; border-radius:4px;">
+                </div>
+                <div class="input-group">
+                    <label for="reportQuestions">Kaç soru çözdün? (Opsiyonel)</label>
+                    <input type="number" id="reportQuestions" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label for="reportNote">Kısa Not / En zorlanılan kısım</label>
+                    <input type="text" id="reportNote" placeholder="Logaritma kurallarını tekrar etmem lazım...">
+                </div>
+                <button type="submit" class="btn-dark w-100">Raporu Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shortcuts Help Modal -->
+    <div id="shortcuts-modal" class="modal">
+        <div class="auth-card">
+            <button id="closeShortcutsBtn" class="close-btn" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            <h2><i class="fa-solid fa-keyboard"></i> Klavye Kısayolları</h2>
+            <ul style="list-style:none; margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+                <li><kbd>Space</kbd> Timer Başlat/Duraklat</li>
+                <li><kbd>R</kbd> Timer Sıfırla</li>
+                <li><kbd>N</kbd> Yeni Görev Ekleme Alanına Odaklan</li>
+                <li><kbd>T</kbd> Tekrarlar Sayfasına Git</li>
+                <li><kbd>?</kbd> Bu Menüyü Aç/Kapat</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- App Section -->
+    <div id="app-section" class="active">
+        <header class="app-header">
+            <div class="logo">
+                <i class="fa-solid fa-seedling"></i> Bloom
+            </div>
+            <div class="user-status">
+                <button id="zenModeToggleBtn" class="text-btn" title="Düşük Dikkat Modu (Zen)"><i class="fa-solid fa-leaf"></i></button>
+                <button id="darkModeToggleBtn" class="text-btn" title="Karanlık Mod"><i class="fa-solid fa-moon"></i></button>
+                <button id="openShortcutsBtn" class="text-btn" title="Kısayollar (?)"><i class="fa-solid fa-keyboard"></i></button>
+                <span id="userEmailDisplay" style="display:none;"></span>
+                <button id="openAuthBtn" class="btn-dark">Giriş / Kayıt</button>
+                <button id="logoutBtn" class="btn-light" style="display:none;">Çıkış Yap</button>
+                <button id="adminBtn" class="text-btn admin-btn" style="display:none;">Admin</button>
+            </div>
+        </header>
+
+        <div class="app-layout">
+            <!-- Navigation Sidebar (Bottom Nav on Mobile) -->
+            <nav class="sidebar-nav" aria-label="Ana Menü">
+                <button class="nav-btn active" data-tab="tab-pomodoro"><i class="fa-solid fa-clock"></i> <span>Çalışma Odası</span></button>
+                <button class="nav-btn" data-tab="tab-tasks"><i class="fa-solid fa-list-check"></i> <span>Görevler & Plan</span></button>
+                <button class="nav-btn" data-tab="tab-garden"><i class="fa-solid fa-seedling"></i> <span>Çiçek Bahçesi</span></button>
+                <button class="nav-btn" data-tab="tab-mistakes"><i class="fa-solid fa-book-open"></i> <span>Yanlış Defteri</span></button>
+                <button class="nav-btn" data-tab="tab-tools"><i class="fa-solid fa-toolbox"></i> <span>Araçlar</span></button>
+                <button class="nav-btn" data-tab="tab-analytics"><i class="fa-solid fa-chart-pie"></i> <span>Analitik</span></button>
+                <button class="nav-btn" data-tab="tab-ambient"><i class="fa-solid fa-music"></i> <span>Ortam Sesleri</span></button>
+                <button class="nav-btn" data-tab="tab-feedback"><i class="fa-regular fa-comment-dots"></i> <span>Geri Bildirim</span></button>
+                
+                <!-- Global Audio Controller (Visible only when audio is playing) -->
+                <div id="globalAudioSection" class="global-audio-widget" style="display: none;">
+                    <div class="widget-info">
+                        <i class="fa-solid fa-headphones"></i>
+                        <span id="playingSoundsText">Sesler...</span>
+                    </div>
+                    <button id="globalPlayPauseBtn" class="btn-icon" aria-label="Durdur/Oynat"><i class="fa-solid fa-pause"></i></button>
+                </div>
+                
+                <!-- Cookie Consent Widget (Integrated into Sidebar) -->
+                <div id="cookieConsentBanner" class="cookie-banner" style="display:none;">
+                    <div class="cookie-content">
+                        <h3>🍪 Çerez Tercihleri</h3>
+                        <p>Deneyiminizi geliştirmek ve istatistikleri tutmak için çerezleri kullanıyoruz. Zorunlu çerezler (verilerinizi cihazda tutmak için) her zaman aktiftir.</p>
+                        <div class="cookie-actions">
+                            <button id="acceptAllCookies" class="btn-dark">Tümünü Kabul Et</button>
+                            <button id="rejectCookies" class="btn-light">Sadece Zorunluları Tut</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="main-container">
+                
+                <!-- Pomodoro Tab -->
+                <section id="tab-pomodoro" class="tab-pane active">
+                    <div class="pomodoro-layout">
+                        <!-- Timer Section -->
+                        <div class="timer-section card-glass">
+                            <div class="timer-mode-pill">
+                                <button class="mode-toggle active" data-mode="focus">Odaklanma</button>
+                                <button class="mode-toggle" data-mode="shortBreak">Kısa Mola</button>
+                                <button class="mode-toggle" data-mode="longBreak">Uzun Mola</button>
+                            </div>
+
+                            <!-- Active Task Selector -->
+                            <div class="active-task-selector">
+                                <label for="currentActiveTask"><i class="fa-solid fa-thumbtack"></i> Şu anki görev:</label>
+                                <select id="currentActiveTask">
+                                    <option value="">-- Serbest Çalışma --</option>
+                                    <!-- Dynamic Tasks -->
+                                </select>
+                            </div>
+
+                            <div class="timer-circle-wrapper">
+                                <div class="timer-circle">
+                                    <div class="timer-display" id="timeDisplay">25:00</div>
+                                    <div class="timer-label" id="timerLabel">Odak seansı</div>
+                                </div>
+                            </div>
+
+                            <!-- Clock Audio Selector -->
+                            <div class="clock-sound-controls">
+                                <label for="clockAudioSelect"><i class="fa-solid fa-stopwatch"></i> Saat Sesi:</label>
+                                <select id="clockAudioSelect">
+                                    <option value="">Sessiz</option>
+                                    <option value="CinematicClock.mp3">Sinematik Saat</option>
+                                    <option value="OldWallClock.wav">Eski Duvar Saati</option>
+                                    <option value="WallClock.mp3">Standart Duvar Saati</option>
+                                </select>
+                                <input type="range" id="clockVolume" min="0" max="1" step="0.05" value="0.5" aria-label="Saat sesi seviyesi">
+                            </div>
+
+                            <div class="timer-actions">
+                                <button id="startTimerBtn" class="btn-dark"><i class="fa-solid fa-play"></i> Başlat</button>
+                                <button id="resetTimerBtn" class="btn-light"><i class="fa-solid fa-rotate-right"></i> Sıfırla</button>
+                                <button id="hyperFocusBtn" class="btn-light" title="Tam Odak (Dikkat Dağıtma) Modu"><i class="fa-solid fa-expand"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Side Panels: Today's Plan & Upcoming Rooms -->
+                        <div>
+                            <div class="todays-plan-panel card-glass" style="margin-bottom:20px;">
+                                <h3><i class="fa-solid fa-calendar-day"></i> Bugünkü Plan</h3>
+                                <div id="todaysPlanList" class="todays-plan-list">
+                                    <p class="empty-state">Henüz bir görev eklenmedi.</p>
+                                </div>
+                            </div>
+
+                            <div class="focus-rooms-preview card-glass hide-in-zen">
+                                <h3><i class="fa-solid fa-door-open"></i> Ortak Odalar (Yakında)</h3>
+                                <div class="rooms-scroller">
+                                    <div class="room-card">
+                                        <i class="fa-solid fa-book-open-reader"></i> Sessiz Kütüphane<br>
+                                        <small><i class="fa-solid fa-circle text-success" style="font-size:8px;"></i> 1,245 aktif</small>
+                                    </div>
+                                    <div class="room-card">
+                                        <i class="fa-solid fa-square-root-variable"></i> Matematik Kampı<br>
+                                        <small><i class="fa-solid fa-circle text-success" style="font-size:8px;"></i> 830 aktif</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tasks Tab -->
+                <section id="tab-tasks" class="tab-pane">
+                    <div class="tasks-header">
+                        <h2>Görevler ve Çalışma Planı</h2>
+                        <p>Bugün neleri halletmemiz gerekiyor? Önceliklendir, takip et, başarmış hisset.</p>
+                    </div>
+                    
+                    <div class="task-grid">
+                        <div class="task-creation-form card-glass">
+                            <h3>Yeni Görev Ekle</h3>
+                            <div class="form-group">
+                                <label for="newTaskName">Görev / Hedef Adı</label>
+                                <input type="text" id="newTaskName" placeholder="Örn: Limit Fasikülü Test 1-5">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newTaskSubject">Ders</label>
+                                    <select id="newTaskSubject">
+                                        <option value="Matematik">Matematik</option>
+                                        <option value="Fizik">Fizik</option>
+                                        <option value="Kimya">Kimya</option>
+                                        <option value="Biyoloji">Biyoloji</option>
+                                        <option value="Türkçe">Türkçe</option>
+                                        <option value="Tarih">Tarih</option>
+                                        <option value="Coğrafya">Coğrafya</option>
+                                        <option value="Diğer">Diğer</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newTaskTopic">Konu</label>
+                                    <input type="text" id="newTaskTopic" placeholder="Örn: Türev">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newTaskTimeGoal">Hedef Süre (Dk)</label>
+                                    <input type="number" id="newTaskTimeGoal" placeholder="Örn: 90">
+                                </div>
+                                <div class="form-group">
+                                    <label for="newTaskQuestionGoal">Hedef Soru</label>
+                                    <input type="number" id="newTaskQuestionGoal" placeholder="Örn: 100">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="newTaskPriority">Öncelik</label>
+                                    <select id="newTaskPriority">
+                                        <option value="high">Yüksek (Kırmızı)</option>
+                                        <option value="medium" selected>Orta (Sarı)</option>
+                                        <option value="low">Düşük (Yeşil)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newTaskRatio">Net Hesabı</label>
+                                    <select id="newTaskRatio">
+                                        <option value="0">Sadece Doğru-Yanlış</option>
+                                        <option value="4">4 Yanlış 1 Doğru</option>
+                                        <option value="3">3 Yanlış 1 Doğru</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="createNewTaskBtn" class="btn-dark w-100">Görevi Planla</button>
+                        </div>
+
+                        <div class="task-list-container card-glass">
+                            <h3>Mevcut Görevler</h3>
+                            <div id="fullTaskList" class="full-task-list">
+                                <!-- Dynamic List -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Mistakes Notebook Tab -->
+                <section id="tab-mistakes" class="tab-pane">
+                    <div class="tasks-header">
+                        <h2>Yanlış Defteri & Akıllı Tekrar</h2>
+                        <p>Hatalarımız en iyi öğretmenlerimizdir. Öğrendiğin dersleri buraya not et, vakti geldiğinde tekrarla.</p>
+                    </div>
+
+                    <!-- Smart Review Panel -->
+                    <div class="card-glass" style="margin-bottom:30px; border-left: 4px solid var(--warning-color);">
+                        <h3><i class="fa-solid fa-calendar-check"></i> Bugünün Öncelikli Tekrarları</h3>
+                        <div id="smartReviewList" class="todays-plan-list" style="margin-top:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <p class="empty-state" style="grid-column: 1 / -1;">Bugün için bekleyen tekrar yok.</p>
+                        </div>
+                    </div>
+
+                    <div class="task-grid">
+                        <div class="task-creation-form card-glass">
+                            <h3>Yeni Hata Ekle</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mistakeSubject">Ders</label>
+                                    <select id="mistakeSubject">
+                                        <option value="Matematik">Matematik</option>
+                                        <option value="Fizik">Fizik</option>
+                                        <option value="Türkçe">Türkçe</option>
+                                        <option value="Diğer">Diğer</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mistakeTopic">Konu</label>
+                                    <input type="text" id="mistakeTopic" placeholder="Örn: Newton Kanunları">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="mistakeReason">Hata Sebebi</label>
+                                    <select id="mistakeReason">
+                                        <option value="Bilgi Eksiği">Bilgi Eksiği</option>
+                                        <option value="Kavram Yanılgısı">Kavram Yanılgısı</option>
+                                        <option value="Dikkat Hatası">Dikkat Hatası</option>
+                                        <option value="Süre Yetmedi">Süre Yetmedi</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="mistakeReviewDate">Tekrar Tarihi</label>
+                                    <input type="date" id="mistakeReviewDate">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="mistakeNote">Öğrenilen Ders / Kısa Not</label>
+                                <textarea id="mistakeNote" rows="3" placeholder="Sürtünme katsayısını statik ve kinetik olarak ikiye ayırmayı unuttum..."></textarea>
+                            </div>
+                            <button id="addMistakeBtn" class="btn-dark w-100">Deftere Ekle</button>
+                        </div>
+
+                        <div class="task-list-container card-glass">
+                            <h3>Defterim</h3>
+                            <div id="mistakesList" class="mistakes-list">
+                                <!-- Dynamic List -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tools Tab -->
+                <section id="tab-tools" class="tab-pane">
+                    <div class="tasks-header">
+                        <h2>Araçlar ve Asistanlar</h2>
+                        <p>Çalışmalarınızı destekleyecek ufak hesaplayıcılar ve planlayıcılar.</p>
+                    </div>
+
+                    <div class="tools-grid">
+                        <!-- Mini Coach -->
+                        <div class="tool-card card-glass" style="border-left: 4px solid var(--primary-color);">
+                            <h3><i class="fa-solid fa-magic"></i> Çalışma Koçu</h3>
+                            <div class="form-group">
+                                <label for="coachHours">Bugün kaç saatiniz var?</label>
+                                <input type="number" id="coachHours" value="2" min="1" max="10">
+                            </div>
+                            <button id="coachGenerateBtn" class="btn-dark w-100">Program Üret</button>
+                            <div id="coachResult" style="margin-top:15px; font-size:0.9rem; white-space:pre-wrap;"></div>
+                        </div>
+
+                        <div class="tool-card card-glass">
+                            <h3><i class="fa-solid fa-hourglass-half"></i> Sınav Sayacı</h3>
+                            <div class="form-group">
+                                <label for="examDate">Hedef Sınav Tarihi</label>
+                                <input type="date" id="examDate" value="2026-06-20">
+                            </div>
+                            <div class="countdown-result" id="countdownResult">
+                                <strong>0</strong> gün kaldı
+                            </div>
+                        </div>
+
+                        <div class="tool-card card-glass">
+                            <h3><i class="fa-solid fa-calculator"></i> Pratik Net Hesapla</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="toolCorrect">Doğru</label>
+                                    <input type="number" id="toolCorrect" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label for="toolWrong">Yanlış</label>
+                                    <input type="number" id="toolWrong" value="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <select id="toolRatio">
+                                    <option value="4">4 Yanlış 1 Doğruyu Götürür</option>
+                                    <option value="3">3 Yanlış 1 Doğruyu Götürür</option>
+                                </select>
+                            </div>
+                            <button id="toolCalcNetBtn" class="btn-light w-100">Hesapla</button>
+                            <div class="net-display-large" id="toolNetResult">0.00</div>
+                        </div>
+
+                        <!-- Data Export -->
+                        <div class="tool-card card-glass">
+                            <h3><i class="fa-solid fa-database"></i> Veri Yönetimi</h3>
+                            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Verileriniz tarayıcınızda güvendedir. Yedeğini indirebilir veya tamamen silebilirsiniz.</p>
+                            <button id="exportDataBtn" class="btn-light w-100" style="margin-bottom:10px;"><i class="fa-solid fa-download"></i> Verimi İndir (JSON)</button>
+                            <button id="resetDataBtn" class="btn-light w-100" style="color:var(--danger-color); border:1px solid var(--danger-color)"><i class="fa-solid fa-trash"></i> Tüm Veriyi Sil</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Flower Garden Tab -->
+                <section id="tab-garden" class="tab-pane">
+                    <div class="tasks-header">
+                        <h2>Çiçek Bahçesi</h2>
+                        <p>Odaklandığın her an, bahçende yeni bir yaşam filizlenir.</p>
+                    </div>
+
+                    <div class="garden-stats-row">
+                        <div class="g-stat-card card-glass">
+                            <h4>Bugünkü Hasat</h4>
+                            <div class="g-stat-value" id="gardenTodayCount">0</div>
+                            <p>Çiçek</p>
+                        </div>
+                        <div class="g-stat-card card-glass">
+                            <h4>Seri (Streak)</h4>
+                            <div class="g-stat-value" id="gardenStreakCount">0</div>
+                            <p>Gün</p>
+                        </div>
+                        <div class="g-stat-card card-glass">
+                            <h4>Toplam Çiçek</h4>
+                            <div class="g-stat-value" id="gardenTotalCount">0</div>
+                            <p>Bitki</p>
+                        </div>
+                    </div>
+
+                    <div class="garden-canvas-wrapper card-glass hide-in-zen">
+                        <div class="garden-canvas" id="gardenCanvas">
+                            <!-- Flowers dynamically added -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Ambient Tab -->
+                <section id="tab-ambient" class="tab-pane">
+                    <div class="tasks-header">
+                        <h2>Ortam Sesleri</h2>
+                        <p>Kendine ait odaklanma akustiğini yarat.</p>
+                    </div>
+                    <div class="ambient-grid">
+                        <div class="sound-card card-glass" id="metronomeCard">
+                            <div class="sound-icon" style="background:#E6F0F8; color:#333;"><i class="fa-solid fa-stopwatch-20"></i></div>
+                            <h4>Metronom</h4>
+                            <div class="metronome-controls">
+                                <span class="bpm-display"><span id="bpmValue">60</span> BPM</span>
+                                <input type="range" id="bpmSlider" min="40" max="210" step="1" value="60" aria-label="BPM seviyesi">
+                                <input type="range" class="volume-slider" id="metronomeVolume" min="0" max="1" step="0.01" value="0" aria-label="Metronom sesi seviyesi">
+                            </div>
+                        </div>
+
+                        <div class="sound-card card-glass" data-sound="RainNoise.mp3">
+                            <div class="sound-icon blue"><i class="fa-solid fa-cloud-rain"></i></div>
+                            <h4>Yağmur</h4>
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="0" aria-label="Yağmur sesi seviyesi">
+                        </div>
+                        <div class="sound-card card-glass" data-sound="Train_noise.mp3">
+                            <div class="sound-icon yellow"><i class="fa-solid fa-train"></i></div>
+                            <h4>Tren</h4>
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="0" aria-label="Tren sesi seviyesi">
+                        </div>
+                        <div class="sound-card card-glass" data-sound="SkyscrapperWindNoise.mp3">
+                            <div class="sound-icon green"><i class="fa-solid fa-wind"></i></div>
+                            <h4>Şehir Rüzgarı</h4>
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="0" aria-label="Rüzgar sesi seviyesi">
+                        </div>
+                        <div class="sound-card card-glass" data-sound="Waves_noise.mp3">
+                            <div class="sound-icon blue"><i class="fa-solid fa-water"></i></div>
+                            <h4>Okyanus</h4>
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="0" aria-label="Okyanus sesi seviyesi">
+                        </div>
+                        <div class="sound-card card-glass" data-sound="StormNoise.mp3">
+                            <div class="sound-icon red"><i class="fa-solid fa-cloud-bolt"></i></div>
+                            <h4>Fırtına</h4>
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="0" aria-label="Fırtına sesi seviyesi">
+                        </div>
+                        <div class="sound-card card-glass" data-sound="PlaneNoise.mp3">
+                            <div class="sound-icon purple"><i class="fa-solid fa-plane"></i></div>
+                            <h4>Uçak Kabini</h4>
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.01" value="0" aria-label="Uçak sesi seviyesi">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Tab -->
+                <section id="tab-analytics" class="tab-pane">
+                    <div class="tasks-header">
+                        <h2>Gelişim Analitiği</h2>
+                        <p>Verilerin yalan söylemez. İlerlemeni gör ve eksiklerini kapat.</p>
+                    </div>
+
+                    <div class="stats-cards">
+                        <div class="stat-card card-glass">
+                            <h4 style="color:var(--text-muted)">Bugünkü Odak</h4>
+                            <p id="totalFocusMinutes">0</p>
+                            <span>Dakika</span>
+                        </div>
+                        <div class="stat-card card-glass">
+                            <h4 style="color:var(--text-muted)">Toplam Çözülen</h4>
+                            <p id="totalQuestionsSolved">0</p>
+                            <span>Soru</span>
+                        </div>
+                    </div>
+
+                    <div class="analytics-layout">
+                        <div class="heatmap-section card-glass">
+                            <h3>Son 7 Gün Odaklanma</h3>
+                            <div class="heatmap-grid" id="heatmapGrid"></div>
+                        </div>
+
+                        <div class="weak-topics-section card-glass">
+                            <h3>Ders ve Konu Performansı</h3>
+                            <ul class="performance-list" id="performanceList">
+                                <li>Henüz yeterli veri yok.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Monetization / Premium Placeholder -->
+                    <div class="premium-placeholder-card">
+                        <div class="premium-content">
+                            <h3><i class="fa-solid fa-gem"></i> Bloom Premium (Yakında)</h3>
+                            <p>Cloud Sync, Akıllı Tekrar Planlayıcı ve Sınırsız Yanlış Defteri ile potansiyelini zirveye taşı.</p>
+                            <button class="btn-dark" disabled style="opacity:0.7">Yakında Geliyor</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Feedback Tab -->
+                <section id="tab-feedback" class="tab-pane">
+                    <div class="tasks-header">
+                        <h2>Geri Bildirim</h2>
+                        <p>Görüşleriniz bizim için değerli. Soru, öneri ve şikayetlerinizi iletebilirsiniz.</p>
+                    </div>
+                    <div class="task-creation-form card-glass" style="max-width:600px; margin:0 auto;">
+                        <form id="feedbackForm">
+                            <div class="form-group">
+                                <label for="fbEmail">E-posta Adresiniz</label>
+                                <input type="email" id="fbEmail" required placeholder="ornek@mail.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="fbSubject">Konu</label>
+                                <input type="text" id="fbSubject" required placeholder="Ne hakkında görüşecektiniz?">
+                            </div>
+                            <div class="form-group">
+                                <label for="fbMessage">Mesajınız</label>
+                                <textarea id="fbMessage" rows="5" required placeholder="Düşüncelerinizi buraya yazın..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="fbCaptcha">Güvenlik Doğrulaması: <strong id="captchaQuestion" style="color:var(--primary-color)"></strong></label>
+                                <input type="number" id="fbCaptcha" required placeholder="Cevabı girin">
+                            </div>
+                            <button type="submit" class="btn-dark w-100">Mail ile Gönder</button>
+                        </form>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- SEO Blocks (Hidden from visual, accessible to crawlers/scrollers at bottom) -->
+    <section id="seo-content" class="seo-container">
+        <article class="seo-article">
+            <h1>TYT, AYT ve LGS Net Hesaplama</h1>
+            <p>Sınavlarda netinizi hesaplamak için doğru sayınızdan yanlış sayınızın dörtte birini (veya üçte birini) çıkarmanız gerekmektedir. Bloom ile görevlerinizi takip ederken bu işlemi otomatik yapabilirsiniz.</p>
+        </article>
+        <article class="seo-article">
+            <h2>Pomodoro Tekniği Nedir?</h2>
+            <p>Pomodoro tekniği, 25 dakikalık odaklanma ve 5 dakikalık kısa molalarla çalışmayı temel alan bilimsel bir verimlilik yöntemidir. Öğrencilerin dikkat süresini artırmak için birebirdir.</p>
+        </article>
+        <article class="seo-article">
+            <h2>Günde Kaç Soru Çözmeliyim?</h2>
+            <p>Günlük çözülmesi gereken soru sayısı hedefinize göre değişir. Bloom'un hedef planlayıcı aracı, kalan sürenizi ve toplam çözmek istediğiniz soru sayısını baz alarak size günlük bir rota çizer.</p>
+        </article>
+    </section>
+
+    <!-- Footer / Privacy Links -->
+    <footer class="app-footer">
+        <div class="footer-links">
+            <a href="#" onclick="openPrivacyModal('kvkk')">Gizlilik Politikası</a>
+            <a href="#" onclick="openPrivacyModal('terms')">Kullanım Şartları</a>
+            <a href="#" onclick="openPrivacyModal('cookie')">Çerez Politikası</a>
+        </div>
+        <p class="footer-note">Misafir kullanımda veriler sadece cihazınızda saklanır. Senkronizasyonu açarsanız güvenle buluta aktarılır.</p>
+    </footer>
+
+    <!-- Admin Panel (Gizli kalacak) -->
+    <div id="admin-section">
+        <header class="app-header">
+            <h2>Admin Dashboard & İç Analytics</h2>
+            <button id="exitAdminBtn" class="btn-light">Exit</button>
+        </header>
+        <div class="admin-container" style="padding:20px;">
+            <h3>Genel Kullanım Metrikleri</h3>
+            <ul id="adminStatsList" style="margin-bottom:20px;">
+                <!-- Internal stats -->
+            </ul>
+        </div>
+    </div>
+
+
+    <!-- Privacy Modals -->
+    <div id="privacy-modal" class="modal">
+        <div class="auth-card" style="max-width:800px; max-height:80vh; overflow-y:auto;">
+            <button onclick="document.getElementById('privacy-modal').classList.remove('active')" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            <h2 id="privacyModalTitle">Aydınlatma Metni</h2>
+            <div id="privacyModalContent" style="margin-top:20px; font-size:0.9rem; line-height:1.6; color:var(--text-main);">
+                <!-- Dynamic text -->
+            </div>
+        </div>
+    </div>
+
+    <script src="firebase-sync.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
